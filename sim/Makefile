@@ -10,25 +10,26 @@
 CPP = gcc
 CFLAGS = -std=c++14 -g
 
-OBJECTS = SignalParams.o
-INCLUDES = SignalParams.h
-SOURCES = SignalParams.cpp
-LDFLAGS = -pthread -ljsoncpp -lzmq -lstdc++ -ljsoncpp
+OBJECTS = rp_gen.o signal_params.o cli_options.o
+INCLUDES = rp_gen.h signal_params.h cli_options.h
+SOURCES = rp_gen.cpp signal_params.cpp cli_options.cpp
+LDFLAGS = -pthread -ljsoncpp -lstdc++ -ljsoncpp
+#LDFLAGS = -pthread -ljsoncpp -lzmq -lstdc++ -ljsoncpp
 
-#RP_OBJ = rp_server.o rp_setup.o trim.o misc.o mca_params.o calc_mca.o
+RP_OBJ = rp_gen.o signal_params.o cli_options.o
 #RP_SRC = rp_server.cpp rp_setup.cpp trim.cpp misc.cpp mca_params.cpp calc_mca.cpp
 #RP_INC = 
 
-all: read_json rp_server
+all: rp_gen
 
 .cpp.o:
 	$(CPP) -c $(CFLAGS) $< -o $@
 
-rp_server: $(RP_OBJ)
+rp_gen: $(RP_OBJ)
 	$(CPP) -g $(RP_OBJ) $(LDFLAGS) -o $@
 
-read_json: $(OBJECTS)
-	$(CPP) -g $(OBJECTS) $(LDFLAGS) -o $@
+#read_json: $(OBJECTS)
+#	$(CPP) -g $(OBJECTS) $(LDFLAGS) -o $@
 
 clean:
 	rm *.o

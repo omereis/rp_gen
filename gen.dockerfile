@@ -9,4 +9,7 @@ ENV HOME=/home/oe
 
 WORKDIR /home/oe/sim
 
-COPY ./sim $WORKDIR
+# COPY ./ $HOME
+COPY ./ /home/oe/
+COPY ./vimrc $HOME/.vimrc
+# RUN mv vimrc .vimrc
