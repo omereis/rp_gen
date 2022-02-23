@@ -36,6 +36,8 @@ bool TCliOptions::operator== (const TCliOptions &other) const
 		return (false);
 	if (GetSmaplingRate () != other.GetSmaplingRate())
 		return (false);
+	if (GetSignalLength () != other.GetSignalLength ())
+		return (false);
 	return (true);
 }
 //-----------------------------------------------------------------------------
@@ -54,6 +56,7 @@ void TCliOptions::Clear ()
 	m_dPulseRate = 1e-3;
 	m_fShowHelp = false;
 	SetSamplingRate (8e-9);
+	SetSignalLength (1e-6);
 }
 //-----------------------------------------------------------------------------
 void TCliOptions::AssignAll (const TCliOptions &other)
@@ -64,6 +67,7 @@ void TCliOptions::AssignAll (const TCliOptions &other)
 	m_dPulseRate = other.m_dPulseRate;
 	m_fShowHelp = other.m_fShowHelp;
 	SetSamplingRate (other.GetSmaplingRate());
+	SetSignalLength (other.GetSignalLength ());
 }
 //-----------------------------------------------------------------------------
 void TCliOptions::SetShowHelp (bool f)
@@ -110,7 +114,7 @@ void TCliOptions::LoadFromFile (const char *szFile)
 	Json::Value root, jAlpha, jBeta;
 	Json::Reader reader;
 	
-	string strFile, strExt = ExtractFileExtension (string (szFile));
+	string strTau, strFile, strExt = ExtractFileExtension (string (szFile));
 	if (strExt.length() == 0)
 		strFile = string(szFile) + string(".json");
 	else
@@ -118,12 +122,9 @@ void TCliOptions::LoadFromFile (const char *szFile)
 	printf ("Reading from %s\n", strFile.c_str());
 	string strJson = ReadFileAsString (strFile);
 	if (reader.parse (strJson, root)) {
-		jAlpha = root["Alpha"];
-		if (jAlpha.isNull())
-			m_paramAlpha.SetEnabled (false);
-		else {
-			m_paramAlpha.SetEnabled (true);
-		}
+		m_paramAlpha.LoadFromJson(root["alpha"]);
+		m_paramBeta.LoadFromJson(root["beta"]);
+		strFile += "";
 	}
 }
 //-----------------------------------------------------------------------------
@@ -147,10 +148,19 @@ void TCliOptions::SetSamplingRate (double d)
 	m_dSamplingRate = d;
 }
 //-----------------------------------------------------------------------------
-bool TCliOptions::Generate()
+bool TCliOptions::Generate(TFloatVec &vSignal)
 {
-	TFloatVev vSignal;
-	return (m_paramAlpha.Generate(vSignal, GetSammplingRate());
+	return (m_paramAlpha.Generate(vSignal, GetSamplingRate(), GetSignalLength()));
+}
+//-----------------------------------------------------------------------------
+void TCliOptions::GetSamplingRate(double dRate)
+{
+	m_dSamplingRate = dRate;
+}
+//-----------------------------------------------------------------------------
+double TCliOptions::GetSamplingRate()
+{
+	return (m_dSamplingRate);
 }
 //-----------------------------------------------------------------------------
 string TCliOptions::GetOutFileName () const
@@ -160,18 +170,28 @@ string TCliOptions::GetOutFileName () const
 //-----------------------------------------------------------------------------
 void TCliOptions::SetOutFileName (const string &strFileName)
 {
-	m_strOutput = strFileName);
+	m_strOutput = strFileName;
 }
 //-----------------------------------------------------------------------------
 void TCliOptions::SaveToFile (const TFloatVec &vAlpha)
 {
-	FILE *file = fopen (GetOutFileName ());
-	if (file != null) {
-		TFloatVec cosnt_iterator iFile;
+	FILE *file = fopen (GetOutFileName ().c_str(), "w");
+	if (file != NULL) {
+		TFloatVec::const_iterator iFile;
 		for (iFile = vAlpha.begin() ; iFile != vAlpha.end() ; iFile++)
 			fprintf (file, "%g\n", *iFile);
 		fclose (file);
 	}
+}
+//-----------------------------------------------------------------------------
+void TCliOptions::SetSignalLength (double dSignalLen)
+{
+	m_dSignalLength = dSignalLen;
+}
+//-----------------------------------------------------------------------------
+double  TCliOptions::GetSignalLength () const
+{
+	return (m_dSignalLength);
 }
 //-----------------------------------------------------------------------------
 

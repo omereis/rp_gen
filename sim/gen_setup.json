@@ -1,9 +1,17 @@
 {
     "alpha":{
         "AmpMax":"1",
-        "AmpMin":"0.6",
-        "LengthMax":"20",
-        "LengthMax":"6"
-        }
+        "AmpMin":"0.5",
+        "length_max":100e-9,
+        "length_min":40e-9,
+        "signal_length":1e-6
+    },
+    "beta":{
+        "AmpMax":"0.6",
+        "AmpMin":"0.2",
+        "length_max":60e-9,
+        "length_min":20e-9,
+        "signal_length":1e-6
     }
+}
 

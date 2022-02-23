@@ -75,10 +75,11 @@ int main (int argc, char *argv[])
 	else {
 		TFloatVec vAlpha;
 		options.Print ();
-		if (options.GetParmasAlpha().GenEnabled ()) {
-			vAlpha = options.Generate();
+		if (options.GetParmasAlpha().GetEnabled ()) {
+			options.Generate(vAlpha);
 			if (options.GetOutFileName().length() > 0)
 				options.SaveToFile (vAlpha);
+		}
 	}
 	printf ("Bye\n");
 	exit(0);

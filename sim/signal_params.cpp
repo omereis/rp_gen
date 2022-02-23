@@ -2,6 +2,10 @@
 |                              SignalParams.cpp                                |
 \******************************************************************************/
 #include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+#include "misc.h"
 #include "signal_params.h"
 
 //-----------------------------------------------------------------------------
@@ -34,20 +38,22 @@ bool TSignalParams::operator!= (const TSignalParams &other) const
 void TSignalParams::Clear ()
 {
 	SetName ("");
-	m_dSignalLength = 2e14;
+	SetSignalLength (1e-3);
 	m_dTau = 1;
 	SetEnabled (false);
 	SetAmplitudeMax(0.8);
 	SetAmplitudeMin(0.6);
+	SetEnabled (false);
 }
 //-----------------------------------------------------------------------------
 void TSignalParams::AssignAll (const TSignalParams &other)
 {
 	m_strName = other.m_strName;
-	m_dSignalLength = other.m_dSignalLength;
-	m_dTau = other.m_dTau;
+	SetSignalLength (other.GetSignalLength());
+	SetTau (other.GetTau());
 	SetAmplitudeMax(other.GetAmplitudeMax());
-	SetAmplitudeMin(other.GetAmplitudeMin);
+	SetAmplitudeMin(other.GetAmplitudeMin());
+	SetEnabled (other.GetEnabled());
 }
 //-----------------------------------------------------------------------------
 void TSignalParams::Print ()
@@ -111,12 +117,77 @@ bool TSignalParams::GetEnabled () const
 	return (m_fEnabled);
 }
 //-----------------------------------------------------------------------------
-bool TSignalParams::Generate(TFloatVev &vSignal, double dt)
+bool TSignalParams::Generate(TFloatVec &vSignal, double dt, double dSignalTime)
 {
-	vSignal.clear ();
-	vSignal.push_back(0);
-	vSignal.push_back(GetAmplitudeMax());
-	double t;
+	bool fGen;
+
+	try {
+		vSignal.clear ();
+		vSignal.push_back(0);
+		double d, t, dTau = GetTau();
+		double dAmp, dAmpMax = GetAmplitudeMax(), dAmpMin = GetAmplitudeMin(), r = (double) rand();
+		dAmp = (dAmpMax - dAmpMin) * r / RAND_MAX + dAmpMin;
+		for (t=dt ; t < dSignalTime ; t += dt) {
+			d = dAmp * exp (-t / dTau);
+			vSignal.push_back (d);
+		}
+		fGen = true;
+	}
+	catch (std::exception exp) {
+		fprintf (stderr, "%s\n", exp.what());
+		fGen = false;
+	}
+	return (fGen);
+}
+//-----------------------------------------------------------------------------
+void TSignalParams::SetSignalLength (double dLength)
+{
+	m_dSignalLength = dLength;
+}
+//-----------------------------------------------------------------------------
+double TSignalParams::GetSignalLength () const
+{
+	return (m_dSignalLength);
+}
+//-----------------------------------------------------------------------------
+bool TSignalParams::LoadFromJson(Json::Value jAlpha)
+{
+	try {
+		if (jAlpha.isNull())
+			SetEnabled (false);
+		else {
+			Json::Value jTau = jAlpha["length_max"];
+			SetTau (StrToDouble(jAlpha["length_max"].asString()));
+			SetAmplitudeMax (StrToDouble(jAlpha["AmpMax"].asString()));
+			SetAmplitudeMin (StrToDouble(jAlpha["AmpMin"].asString()));
+			SetEnabled (true);
+		}
+	}
+	catch (std::exception &exp) {
+		SetEnabled (false);
+		fprintf (stderr, "Runtime error in TSignalParams::LoadFromJsonn\n%s\n", exp.what());
+	}
+	return (GetEnabled ());
+}
+//-----------------------------------------------------------------------------
+double TSignalParams::GetTauMin () const
+{
+	return (m_dTauMin);
+}
+//-----------------------------------------------------------------------------
+void TSignalParams::SetTauMin (double dTau)
+{
+	m_dTauMin = dTau;
+}
+//-----------------------------------------------------------------------------
+double TSignalParams::GetTauMax () const
+{
+	return (m_dTauMax);
+}
+//-----------------------------------------------------------------------------
+void TSignalParams::SetTauMax (double dTau)
+{
+	m_dTauMax = dTau;
 }
 //-----------------------------------------------------------------------------
 

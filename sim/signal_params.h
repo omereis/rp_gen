@@ -6,6 +6,7 @@
 #define	SIGNAL_PARAMS_INC
 
 #include "bd_types.h"
+#include "jsoncpp/json/json.h"
 
 using namespace std;
 
@@ -21,6 +22,9 @@ public:
 	void Clear ();
 
 	void Print ();
+	bool Generate(TFloatVec &vSignal, double dt, double dSignalTime);
+
+	bool LoadFromJson(Json::Value jAlpha);
 	string GetName () const;
 	void  SetName (const string &str);
 	double GetAmplitudeMax() const;
@@ -31,6 +35,12 @@ public:
 	void SetTau(double dTau);
 	void SetEnabled (bool f);
 	bool GetEnabled () const;
+	void SetSignalLength (double dLength);
+	double GetSignalLength () const;
+	double GetTauMin () const;
+	double GetTauMax () const;
+	void SetTauMin (double dTau);
+	void SetTauMax (double dTau);
 protected:
 	void AssignAll (const TSignalParams &other);
 private:
@@ -39,6 +49,8 @@ private:
 	double m_dAmpMax;
 	double m_dAmpMin;
 	double m_dTau;
+	double m_dTauMin;
+	double m_dTauMax;
 	bool m_fEnabled;
 };
 

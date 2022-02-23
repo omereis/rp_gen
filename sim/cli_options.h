@@ -8,6 +8,7 @@
 using namespace std;
 #include <string>
 #include "signal_params.h"
+#include "bd_types.h"
 
 class TCliOptions {
 public:
@@ -22,6 +23,7 @@ public:
 	TSignalParams GetParmasbeta() const;
 	void LoadFromFile (const char *szFile);
 	void Print ();
+	bool Generate(TFloatVec &vSignal);
 
 	void SetShowHelp (bool f);
 	bool GetShowHelp ();
@@ -30,7 +32,11 @@ public:
 	string GetOutFileName () const;
 	void SetOutFileName (const string &strFileName);
 
-void SaveToFile (const TFloatVec &vAlpha);
+	void GetSamplingRate(double dRate);
+	double GetSamplingRate();
+	void SaveToFile (const TFloatVec &vAlpha);
+	void SetSignalLength (double dSignalLen);
+	double GetSignalLength () const;
 protected:
 	void AssignAll (const TCliOptions &other);
 private:
@@ -38,6 +44,7 @@ private:
 	TSignalParams m_paramBeta;
 	string m_strOutput;
 	double m_dPulseRate;
+	double m_dSignalLength;
 	bool m_fShowHelp;
 	double m_dSamplingRate;
 };

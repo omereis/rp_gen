@@ -118,4 +118,18 @@ bool ReadVectorFromFile (const std::string &strFile, TFloatVec &vDate)
 	}
 	return (fRead);
 }
+//-----------------------------------------------------------------------------
+
+double StrToDouble (const std::string &str, double dDef)
+{
+	double dValue;
+
+	try {
+		dValue = atof(str.c_str());
+	}
+	catch (std::exception &exp) {
+		dValue = dDef;
+	}
+	return (dValue);
+}
 //---------------------------------------------------------------------------
