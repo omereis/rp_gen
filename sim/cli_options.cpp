@@ -30,6 +30,8 @@ bool TCliOptions::operator== (const TCliOptions &other) const
 		return (false);
 	if (m_strOutput  != other.m_strOutput)
 		return (false);
+	if (GetPulseRate () != other.GetPulseRate ())
+		return (false);
 	if (m_dPulseRate != other.m_dPulseRate)
 		return (false);
 	if (m_fShowHelp  != other.m_fShowHelp)
@@ -37,6 +39,8 @@ bool TCliOptions::operator== (const TCliOptions &other) const
 	if (GetSmaplingRate () != other.GetSmaplingRate())
 		return (false);
 	if (GetSignalLength () != other.GetSignalLength ())
+		return (false);
+	if (GetBufferSize() != other.GetBufferSize())
 		return (false);
 	return (true);
 }
@@ -53,10 +57,11 @@ void TCliOptions::Clear ()
 	m_paramBeta.Clear ();
 	m_paramBeta.SetName ("Beta");
 	m_strOutput = "";
-	m_dPulseRate = 1e-3;
+	SetPulseRate (1e-3);
 	m_fShowHelp = false;
 	SetSamplingRate (8e-9);
 	SetSignalLength (1e-6);
+	SetBufferSize(16384);
 }
 //-----------------------------------------------------------------------------
 void TCliOptions::AssignAll (const TCliOptions &other)
@@ -64,10 +69,11 @@ void TCliOptions::AssignAll (const TCliOptions &other)
 	m_paramAlpha = other.m_paramAlpha;
 	m_paramBeta = other.m_paramBeta;
 	m_strOutput = other.m_strOutput;
-	m_dPulseRate = other.m_dPulseRate;
 	m_fShowHelp = other.m_fShowHelp;
 	SetSamplingRate (other.GetSmaplingRate());
 	SetSignalLength (other.GetSignalLength ());
+	SetPulseRate (other.GetPulseRate ());
+	SetBufferSize(other.GetBufferSize());
 }
 //-----------------------------------------------------------------------------
 void TCliOptions::SetShowHelp (bool f)
@@ -125,18 +131,35 @@ void TCliOptions::LoadFromFile (const char *szFile)
 		m_paramAlpha.LoadFromJson(root["alpha"]);
 		m_paramBeta.LoadFromJson(root["beta"]);
 		strFile += "";
+		SetPulseRate (root["pulse_rate"].asDouble());
+		SetBufferSize (root["buffer_size"].asInt());
 	}
 }
+
 //-----------------------------------------------------------------------------
 TSignalParams TCliOptions::GetParmasAlpha() const
 {
 	return (m_paramAlpha);
 }
+
 //-----------------------------------------------------------------------------
 TSignalParams TCliOptions::GetParmasbeta() const
 {
 	return (m_paramBeta);
 }
+
+//-----------------------------------------------------------------------------
+void TCliOptions::SetParmasAlpha(const TSignalParams &paramsAlpha)
+{
+	m_paramAlpha = paramsAlpha;
+}
+
+//-----------------------------------------------------------------------------
+void TCliOptions::SetParmasBeta(const TSignalParams &paramsBeta)
+{
+	m_paramBeta = paramsBeta;
+}
+
 //-----------------------------------------------------------------------------
 double TCliOptions::GetSmaplingRate () const
 {
@@ -150,7 +173,23 @@ void TCliOptions::SetSamplingRate (double d)
 //-----------------------------------------------------------------------------
 bool TCliOptions::Generate(TFloatVec &vSignal)
 {
-	return (m_paramAlpha.Generate(vSignal, GetSamplingRate(), GetSignalLength()));
+	bool fGen;
+
+	try {
+		TFloatVec vPulse;
+
+		if (m_paramAlpha.GetEnabled())
+			m_paramAlpha.Generate(vSignal, GetSamplingRate(), GetSignalLength());
+		if (m_paramBeta.GetEnabled())
+			m_paramAlpha.Generate(vPulse, GetSamplingRate(), GetSignalLength());
+		vSignal.insert(vSignal.begin(), vPulse.begin(), vPulse.end());
+		fGen = true;
+	}
+	catch (std::exception &exp) {
+		fGen = false;
+		fprintf (stderr, "Runtime err in 'TCliOptions::Generate':\n%s\n", exp.what());
+	}
+	return (fGen);
 }
 //-----------------------------------------------------------------------------
 void TCliOptions::GetSamplingRate(double dRate)
@@ -194,5 +233,24 @@ double  TCliOptions::GetSignalLength () const
 	return (m_dSignalLength);
 }
 //-----------------------------------------------------------------------------
+double TCliOptions::GetPulseRate () const
+{
+	return (m_dPulseRate);
+}
+//-----------------------------------------------------------------------------
+void TCliOptions::SetPulseRate (double dRate)
+{
+	m_dPulseRate = dRate;
+}
+//-----------------------------------------------------------------------------
+int TCliOptions::GetBufferSize() const
+{
+	return (m_nBufferSize);
+}
+//-----------------------------------------------------------------------------
+void TCliOptions::SetBufferSize(int nSize)
+{
+	m_nBufferSize = nSize;
+}
 
 

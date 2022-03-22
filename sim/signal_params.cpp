@@ -149,6 +149,22 @@ double TSignalParams::GetSignalLength () const
 {
 	return (m_dSignalLength);
 }
+
+//-----------------------------------------------------------------------------
+bool TSignalParams::LoadFromFile (std::string &strFile)
+{
+	Json::Value root;
+	Json::Reader reader;
+	bool fLoad = false;
+
+	string strContent = ReadFileAsString (strFile);
+	if (reader.parse (strContent, root)) {
+		fLoad = LoadFromJson (root["alpha"]);
+		fLoad = LoadFromJson (root["beta"]);
+	}
+	return (false);
+}
+
 //-----------------------------------------------------------------------------
 bool TSignalParams::LoadFromJson(Json::Value jAlpha)
 {
@@ -156,11 +172,13 @@ bool TSignalParams::LoadFromJson(Json::Value jAlpha)
 		if (jAlpha.isNull())
 			SetEnabled (false);
 		else {
-			Json::Value jTau = jAlpha["length_max"];
+			//Json::Value jTau = jAlpha["length_max"];
 			SetTau (StrToDouble(jAlpha["length_max"].asString()));
 			SetAmplitudeMax (StrToDouble(jAlpha["AmpMax"].asString()));
 			SetAmplitudeMin (StrToDouble(jAlpha["AmpMin"].asString()));
 			SetEnabled (true);
+			SetTauMin (jAlpha["length_min"].asDouble());
+			SetTauMax (jAlpha["length_max"].asDouble());
 		}
 	}
 	catch (std::exception &exp) {

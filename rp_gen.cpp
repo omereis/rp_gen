@@ -36,8 +36,6 @@ void get_command_line_options (int argc, char *argv[], TCliOptions &options);
 void PrintHelp ();
 void print_menu (const char *szMenu[]);
 bool get_signal_params (TSignalParams &params);
-string ReadCommand ();
-bool ReadDouble (double &dValue);
 
 static const char *g_szOptions = "hi:o:rsp"; //-----------------------------------------------------------------------------
 TRpGen::TRpGen ()
@@ -122,78 +120,10 @@ int main (int argc, char *argv[])
 	exit(0);
 }
 
-const char *szSignalMenu[] = {
-        "max - Amplitude Maximum",
-        "min - Amplitude Minimum",
-        "lmax - Length Maximum",
-        "lmin - Length Minimum",
-        "len  - Signal Length",
-		"f - read from file",
-		"q - quie signal setup",
-		""
-		};
-
 //-----------------------------------------------------------------------------
 bool get_signal_params (TSignalParams &params)
 {
-	bool fCont=true;
-	string strCommand;
-	double dValue;
-
-	while (fCont) {
-		params.Print();
-		print_menu (szSignalMenu);
-		strCommand = ReadCommand ();
-		if (strCommand == "max") {
-			if (ReadDouble (dValue))
-				params.SetAmplitudeMax (dValue);
-		}
-		else if (strCommand == "f") {
-			printf ("Enter file name ");
-			strCommand = ReadCommand ();
-			params.LoadFromFile (strCommand);
-		}
-		else if (strCommand == "max") {
-			if (ReadDouble (dValue))
-				params.SetAmplitudeMin (dValue);
-		}
-		else if (strCommand == "q")
-			fCont = false;
-	}
-	
 	return (true);
-}
-
-//-----------------------------------------------------------------------------
-bool ReadDouble (double &dValue)
-{
-	char *szBuf = new char[1024];
-	double d=0;
-	bool fRead;
-
-	szBuf = fgets(szBuf, 1024, stdin);
-	try {
-		d = atof(szBuf);
-		fRead = true;
-	}
-	catch (std::exception &e) {
-		fRead = false;
-	}
-	delete[] szBuf;
-	return (fRead);
-}
-
-//-----------------------------------------------------------------------------
-string ReadCommand ()
-{
-	char *szBuf = new char[1024];
-	string strCommand;
-	
-	szBuf = fgets(szBuf, 1024, stdin);
-	strCommand = ToLower(string(szBuf));
-	strCommand = trimString(strCommand);
-	delete[] szBuf;
-	return (strCommand);
 }
 //-----------------------------------------------------------------------------
 void print_menu (const char *szMenu[])

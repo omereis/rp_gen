@@ -21,6 +21,9 @@ public:
 
 	TSignalParams GetParmasAlpha() const;
 	TSignalParams GetParmasbeta() const;
+	void SetParmasAlpha(const TSignalParams &paramsAlpha);
+	void SetParmasBeta(const TSignalParams &paramsBeta);
+
 	void LoadFromFile (const char *szFile);
 	void Print ();
 	bool Generate(TFloatVec &vSignal);
@@ -37,6 +40,10 @@ public:
 	void SaveToFile (const TFloatVec &vAlpha);
 	void SetSignalLength (double dSignalLen);
 	double GetSignalLength () const;
+	double GetPulseRate () const;
+	void SetPulseRate (double dRate);
+	int GetBufferSize() const;
+	void SetBufferSize(int nSize);
 protected:
 	void AssignAll (const TCliOptions &other);
 private:
@@ -47,5 +54,6 @@ private:
 	double m_dSignalLength;
 	bool m_fShowHelp;
 	double m_dSamplingRate;
+	int m_nBufferSize;
 };
 #endif

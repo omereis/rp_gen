@@ -25,6 +25,7 @@ public:
 	bool Generate(TFloatVec &vSignal, double dt, double dSignalTime);
 
 	bool LoadFromJson(Json::Value jAlpha);
+	bool LoadFromFile (std::string &strFile);
 	string GetName () const;
 	void  SetName (const string &str);
 	double GetAmplitudeMax() const;
