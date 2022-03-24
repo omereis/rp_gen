@@ -85,6 +85,17 @@ bool TCliOptions::GetShowHelp ()
 {
 	return (m_fShowHelp);
 }
+
+//-----------------------------------------------------------------------------
+void TCliOptions::PrintParams ()
+{
+	string strAlpha = m_paramAlpha.GetAsString ();
+	string strBeta = m_paramBeta.GetAsString ();
+	printf ("%s\n", strAlpha.c_str());
+	printf ("%s\n", strBeta.c_str());
+	printf ("Output file: %s\n", m_strOutput.c_str());
+	printf ("Pulse Rate: %g miliseconds\n", m_dPulseRate * 1e3);
+}
 //-----------------------------------------------------------------------------
 void TCliOptions::Print ()
 {

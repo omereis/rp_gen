@@ -26,6 +26,7 @@ public:
 
 	void LoadFromFile (const char *szFile);
 	void Print ();
+	void PrintParams ();
 	bool Generate(TFloatVec &vSignal);
 
 	void SetShowHelp (bool f);
