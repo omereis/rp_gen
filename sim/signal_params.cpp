@@ -8,6 +8,10 @@
 #include "misc.h"
 #include "signal_params.h"
 
+string GetParamAsString (const string &strTitle, const string &strValue);
+string GetParamAsString (const string &strTitle, double dValue);
+string GetParamAsString (const string &strTitle, bool fValue);
+
 //-----------------------------------------------------------------------------
 TSignalParams::TSignalParams ()
 {
@@ -55,16 +59,60 @@ void TSignalParams::AssignAll (const TSignalParams &other)
 	SetAmplitudeMin(other.GetAmplitudeMin());
 	SetEnabled (other.GetEnabled());
 }
+
+//-----------------------------------------------------------------------------
+string GetParamAsString (const string &strTitle, bool fValue)
+{
+	string strValue = (fValue ? "True" : "False");
+
+	return (GetParamAsString (strTitle, strValue));
+}
+
+//-----------------------------------------------------------------------------
+string GetParamAsString (const string &strTitle, double dValue)
+{
+	return (GetParamAsString (strTitle, std::to_string(dValue)));
+}
+
+//-----------------------------------------------------------------------------
+string GetParamAsString (const string &strTitle, const string &strValue)
+{
+	char *szBuf = new char [strTitle.length() + 50];
+	sprintf (szBuf, "\n%s - %s", strTitle.c_str(), strValue.c_str());
+	string strParam = string(szBuf);
+	delete[] szBuf;
+	return (strParam);
+}
+
+//-----------------------------------------------------------------------------
+string TSignalParams::GetAsString ()
+{
+	string strParams="";
+
+	strParams = GetParamAsString ("Name", GetName());
+	strParams += GetParamAsString ("Enabled", GetEnabled());
+	strParams += GetParamAsString ("Amplitude Max.", GetAmplitudeMax());
+	strParams += GetParamAsString ("Amplitude Min.", GetAmplitudeMin());
+	strParams += GetParamAsString ("Length", GetSignalLength());
+	strParams += GetParamAsString ("Tau Max.", GetTauMax());
+	strParams += GetParamAsString ("Tau Min.", GetTauMin());
+	//strParams = GetName ();
+	//strParams += "\n" + GetEnabled() ? "Enabled" : "Disabled";
+	//strParams += "\nAmplitudeMax: %g\n", GetAmplitudeMax());
+		//printf ("Pulse Time: %g micro seconds\n", 5.0 * GetTau() * 1e6);
+	return (strParams);
+}
 //-----------------------------------------------------------------------------
 void TSignalParams::Print ()
 {
-	printf ("Signal %s\n", GetName ().c_str());
-	if (GetEnabled()) {
-		printf ("AmplitudeMax: %g\n", GetAmplitudeMax());
-		printf ("Pulse Time: %g micro seconds\n", 5.0 * GetTau() * 1e6);
-	}
-	else
-		printf ("Disabled\n");
+	printf ("%s\n", GetAsString().c_str());
+	/*printf ("Signal %s\n", GetName ().c_str());*/
+	/*if (GetEnabled()) {*/
+		/*printf ("AmplitudeMax: %g\n", GetAmplitudeMax());*/
+		/*printf ("Pulse Time: %g micro seconds\n", 5.0 * GetTau() * 1e6);*/
+	/*}*/
+	/*else*/
+		/*printf ("Disabled\n");*/
 }
 //-----------------------------------------------------------------------------
 string TSignalParams::GetName () const
@@ -151,7 +199,7 @@ double TSignalParams::GetSignalLength () const
 }
 
 //-----------------------------------------------------------------------------
-bool TSignalParams::LoadFromFile (std::string &strFile)
+bool TSignalParams::SignalSetupFromFile (std::string &strFile, const string &strSignal)
 {
 	Json::Value root;
 	Json::Reader reader;
@@ -159,26 +207,26 @@ bool TSignalParams::LoadFromFile (std::string &strFile)
 
 	string strContent = ReadFileAsString (strFile);
 	if (reader.parse (strContent, root)) {
-		fLoad = LoadFromJson (root["alpha"]);
-		fLoad = LoadFromJson (root["beta"]);
+		fLoad = LoadFromJson (root[strSignal]);
+		//fLoad = LoadFromJson (root["beta"]);
 	}
-	return (false);
+	return (fLoad);
 }
 
 //-----------------------------------------------------------------------------
-bool TSignalParams::LoadFromJson(Json::Value jAlpha)
+bool TSignalParams::LoadFromJson(Json::Value jSignal)
 {
 	try {
-		if (jAlpha.isNull())
+		if (jSignal.isNull())
 			SetEnabled (false);
 		else {
 			//Json::Value jTau = jAlpha["length_max"];
-			SetTau (StrToDouble(jAlpha["length_max"].asString()));
-			SetAmplitudeMax (StrToDouble(jAlpha["AmpMax"].asString()));
-			SetAmplitudeMin (StrToDouble(jAlpha["AmpMin"].asString()));
+			SetTau (StrToDouble(jSignal["length_max"].asString()));
+			SetAmplitudeMax (StrToDouble(jSignal["AmpMax"].asString()));
+			SetAmplitudeMin (StrToDouble(jSignal["AmpMin"].asString()));
 			SetEnabled (true);
-			SetTauMin (jAlpha["length_min"].asDouble());
-			SetTauMax (jAlpha["length_max"].asDouble());
+			SetTauMin (jSignal["length_min"].asDouble());
+			SetTauMax (jSignal["length_max"].asDouble());
 		}
 	}
 	catch (std::exception &exp) {
