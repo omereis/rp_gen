@@ -132,4 +132,49 @@ double StrToDouble (const std::string &str, double dDef)
 	}
 	return (dValue);
 }
+
+//-----------------------------------------------------------------------------
+string GetParamAsString (const string &strTitle, bool fValue, const string &strUnits)
+{
+	string strValue = (fValue ? "True" : "False");
+
+	return (GetParamAsString (strTitle, strValue, strUnits));
+}
+
+//-----------------------------------------------------------------------------
+string GetParamAsString (const string &strTitle, double dValue, const string &strUnits)
+{
+	return (GetParamAsString (strTitle, std::to_string(dValue), strUnits));
+}
+
+//-----------------------------------------------------------------------------
+string GetParamAsString (const string &strTitle, const string &strValue, const string &strUnits)
+{
+	char *szBuf = new char [strTitle.length() + 50];
+	sprintf (szBuf, "\n%s - %s", strTitle.c_str(), strValue.c_str());
+	string strParam = string(szBuf);
+	if (strUnits.length() > 0)
+		strParam += " [" + strUnits + "]";
+	delete[] szBuf;
+	return (strParam);
+}
+
+//-----------------------------------------------------------------------------
+bool FileExists (const std::string &strFile)
+{
+	bool fExists;
+	FILE *file = NULL;
+
+	try {
+		file = fopen(strFile.c_str(), "r");
+		fExists = (file != NULL ? true : false);
+		fclose (file);
+	}
+	catch (std::exception &e) {
+		fExists = false;
+		if (file != NULL)
+			fclose (file);
+	}
+	return (fExists);
+}
 //---------------------------------------------------------------------------
