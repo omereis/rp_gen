@@ -25,14 +25,16 @@
 	p - stop
 	
 */
-const char *szMenuMain[] =
-	{"q - quit",
+const char *szMenuMain[] = {
+	"======================================",
+	"q - quit",
 	"a - alpha setup",
 	"b - beta setup",
 	"o - Output File",
 	"p - print",
 	"g - generate,",
 	"s - start/stop",
+	"======================================",
 	""};
 
 void get_command_line_options (int argc, char *argv[], TCliOptions &options);
@@ -106,13 +108,17 @@ int main (int argc, char *argv[])
 			}
 			else if (strCommand == "b") {
 				if (get_signal_params (params, "beta"))
-					options.SetParmasAlpha(params);
+					options.SetParmasBeta(params);
 			}
 			else if (strCommand == "q") {
 				fCont = false;
 			}
 			else if (strCommand == "p") {
 					options.PrintParams ();
+			}
+			else if (strCommand == "g") {
+					if (options.Generate ())
+						printf ("File '%s' Generated\n", options.GetOutFileName ().c_str());
 			}
 			else if (strCommand == "o") {
 				printf ("Enter output file name ");
@@ -138,13 +144,17 @@ int main (int argc, char *argv[])
 }
 
 const char *szSignalMenu[] = {
+		"======================================",
+		"on - Enable",
+		"off - Disable",
         "max - Amplitude Maximum",
         "min - Amplitude Minimum",
         "lmax - Length Maximum",
         "lmin - Length Minimum",
         "len  - Signal Length",
 		"f - read from file",
-		"q - quie signal setup",
+		"q - quit signal setup",
+		"======================================",
 		""
 		};
 
@@ -174,6 +184,10 @@ bool get_signal_params (TSignalParams &params, const string &strSignal)
 		}
 		else if (strCommand == "q")
 			fCont = false;
+		else if (strCommand	== "on")
+			params.SetEnabled (true);
+		else if (strCommand	== "off")
+			params.SetEnabled (false);
 	}
 	
 	return (true);
