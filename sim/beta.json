@@ -1,10 +1,11 @@
 {
     "beta":{
-        "AmpMax":"-20",
-        "AmpMin":"0.5",
-        "length_max":100e-9,
-        "length_min":40e-9,
-        "signal_length":1e-6
+        "AmpMax":"8",
+        "AmpMin":"8",
+        "tau_max":40e-9,
+        "tau_min":40e-9,
+        "signal_length":1e-6,
+        "enabled" : true
     }
 }
 
