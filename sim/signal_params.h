@@ -24,7 +24,7 @@ public:
 	void Print ();
 	bool Generate(TFloatVec &vSignal, double dt, double dSignalTime);
 
-	bool LoadFromJson(Json::Value jSignal);
+	bool LoadFromJson(Json::Value jSignal, const string &strName="");
 	bool SignalSetupFromFile (std::string &strFile, const string &strSignal);
 	string GetAsString ();
 	string GetName () const;
