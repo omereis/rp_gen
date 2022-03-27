@@ -2,16 +2,18 @@
     "alpha":{
         "AmpMax":"1",
         "AmpMin":"0.5",
-        "length_max":100e-9,
-        "length_min":40e-9,
-        "signal_length":1e-6
+        "tau_max":100e-9,
+        "tau_min":40e-9,
+        "signal_length":1e-6,
+        "enabled" : true
     },
     "beta":{
         "AmpMax":"0.6",
         "AmpMin":"0.2",
-        "length_max":60e-9,
-        "length_min":20e-9,
-        "signal_length":1e-6
+        "tau_max":60e-9,
+        "tau_min":20e-9,
+        "signal_length":1e-6,
+        "enabled" : true
     },
     "pulse_rate":1e-3,
     "buffer_size":16384
