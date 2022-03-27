@@ -181,6 +181,33 @@ void TCliOptions::SetSamplingRate (double d)
 {
 	m_dSamplingRate = d;
 }
+
+//-----------------------------------------------------------------------------
+bool TCliOptions::Generate()
+{
+	bool f = false;
+
+	TFloatVec vSignal;
+	if (Generate(vSignal))
+		f = SaveSignal (vSignal, GetOutFileName ());
+	return (f);
+}
+
+//-----------------------------------------------------------------------------
+bool TCliOptions::SaveSignal (const TFloatVec &vSignal, const string &strFileName)
+{
+	bool fSave = false;
+	TFloatVec::const_iterator i;
+	FILE *file = fopen (strFileName.c_str(), "w+");
+
+	if (file != NULL) {
+		for (i=vSignal.begin() ; i != vSignal.end() ; i++)
+			fprintf (file, "%g\n", *i);
+		fclose (file);
+		fSave = true;
+	}
+	return (fSave);
+}
 //-----------------------------------------------------------------------------
 bool TCliOptions::Generate(TFloatVec &vSignal)
 {

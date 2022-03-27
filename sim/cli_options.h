@@ -45,6 +45,9 @@ public:
 	void SetPulseRate (double dRate);
 	int GetBufferSize() const;
 	void SetBufferSize(int nSize);
+
+	bool Generate();
+	bool SaveSignal (const TFloatVec &vSignal, const string &strFileName);
 protected:
 	void AssignAll (const TCliOptions &other);
 private:
