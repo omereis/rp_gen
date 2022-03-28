@@ -1,21 +1,22 @@
 {
     "alpha":{
-        "AmpMax":"1",
-        "AmpMin":"0.5",
+        "AmpMax":"10",
+        "AmpMin":"10",
         "tau_max":100e-9,
-        "tau_min":40e-9,
+        "tau_min":100e-9,
         "signal_length":1e-6,
         "enabled" : true
     },
     "beta":{
-        "AmpMax":"0.6",
-        "AmpMin":"0.2",
-        "tau_max":60e-9,
-        "tau_min":20e-9,
+        "AmpMax":"8",
+        "AmpMin":"8",
+        "tau_max":40e-9,
+        "tau_min":40e-9,
         "signal_length":1e-6,
         "enabled" : true
     },
-    "pulse_rate":1e-3,
-    "buffer_size":16384
+    "pulse_rate":5e-6,
+    "buffer_size":16384,
+    "sample_rate":8e-9
 }
 
