@@ -189,13 +189,14 @@ void TCliOptions::SetSamplingRate (double d)
 }
 
 //-----------------------------------------------------------------------------
-bool TCliOptions::Generate()
+bool TCliOptions::GenerateBuffer(TFloatVec &vBuffer)
 {
 	bool f;
-	TFloatVec vSignal, vBuffer;
+	TFloatVec vSignal;
 	TFloatVec::iterator iSignal;
 	size_t sz=0, szBuffer = GetBufferSize();
 
+	vBuffer.clear ();
 	for (f=true ; (f == true) && (sz < szBuffer) ; ) {
 		vSignal.clear();
 		Generate(vSignal);

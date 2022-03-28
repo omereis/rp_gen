@@ -28,6 +28,7 @@ public:
 	void LoadFromFile (const char *szFile);
 	void Print ();
 	void PrintParams ();
+	bool GenerateBuffer(TFloatVec &vBuffer);
 	bool Generate(TFloatVec &vSignal);
 
 	void SetShowHelp (bool f);
@@ -47,7 +48,6 @@ public:
 	int GetBufferSize() const;
 	void SetBufferSize(int nSize);
 
-	bool Generate();
 	bool SaveSignal (const TFloatVec &vSignal, const string &strFileName);
 protected:
 	void AssignAll (const TCliOptions &other);

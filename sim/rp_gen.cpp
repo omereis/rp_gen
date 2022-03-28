@@ -34,7 +34,8 @@ const char *szMenuMain[] = {
 	"p - print",
 	"g - generate,",
 	"u - setup,",
-	"s - start/stop",
+	"start - start",
+	"stop - stop",
 	"======================================",
 	""};
 
@@ -44,6 +45,8 @@ void print_menu (const char *szMenuMain[]);
 bool get_signal_params (TSignalParams &, const string &strSignal);
 string ReadCommand (const string &strPrompt);
 bool ReadDouble (double &dValue);
+void StartGenerator (const TFloatVec &vBuffer);
+void StopGenerator ();
 
 static const char *g_szOptions = "hi:o:rsp"; //-----------------------------------------------------------------------------
 TRpGen::TRpGen ()
@@ -91,6 +94,7 @@ int main (int argc, char *argv[])
 	TSignalParams params;
 	bool fCont=true;
 	char *szBuf = new char[1024];
+	TFloatVec vBuffer;
 	
 	printf ("\n\nDual Pulse Simulator\n");
 	printf ("\tfor help type %s --help\n", argv[0]);
@@ -120,7 +124,7 @@ int main (int argc, char *argv[])
 					options.PrintParams ();
 			}
 			else if (strCommand == "g") {
-					if (options.Generate ())
+					if (options.Generate (vBuffer))
 						printf ("File '%s' Generated\n", options.GetOutFileName ().c_str());
 			}
 			else if (strCommand == "o") {
@@ -133,6 +137,10 @@ int main (int argc, char *argv[])
 				strCommand = ReadCommand("Parameters JSON file name ");
 				options.LoadFromFile (strCommand);
 			}
+			else if (strCommand == "start")
+				StartGenerator (vBuffer);
+			else if (strCommand == "stop")
+				StopGenerator ();
 			else
 				printf ("unknown command\n");
 		}
@@ -259,6 +267,7 @@ void get_command_line_options (int argc, char *argv[], TCliOptions &options)
 			options.SetOutFileName (optarg);
 	}
 }
+
 //-----------------------------------------------------------------------------
 void PrintHelp ()
 {
@@ -267,4 +276,16 @@ void PrintHelp ()
 	printf ("o - output file [.csv]\n");
 	printf ("r - start\n");
 	printf ("p - stop\n");
+}
+
+//-----------------------------------------------------------------------------
+void StartGenerator (const TFloatVec &vBuffer)
+{
+
+}
+
+//-----------------------------------------------------------------------------
+void StopGenerator ()
+{
+
 }
