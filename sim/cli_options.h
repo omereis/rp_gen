@@ -19,11 +19,12 @@ public:
 	bool operator!= (const TCliOptions &other) const;
 	void Clear ();
 
-	TSignalParams GetParmasAlpha() const;
-	TSignalParams GetParmasbeta() const;
-	void SetParmasAlpha(const TSignalParams &paramsAlpha);
-	void SetParmasBeta(const TSignalParams &paramsBeta);
+	TSignalParams GetParamsAlpha() const;
+	TSignalParams GetParamsBeta() const;
+	void SetParamsAlpha(const TSignalParams &paramsAlpha);
+	void SetParamsBeta(const TSignalParams &paramsBeta);
 
+	void LoadFromFile (const std::string &strFile);
 	void LoadFromFile (const char *szFile);
 	void Print ();
 	void PrintParams ();

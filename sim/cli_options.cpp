@@ -125,6 +125,12 @@ string ToLower (string strSrc)
 		strLower[n] = tolower(strSrc[n]);
 	return (strLower);
 }
+
+//-----------------------------------------------------------------------------
+void TCliOptions::LoadFromFile (const std::string &strFile)
+{
+	LoadFromFile (strFile.c_str());
+}
 //-----------------------------------------------------------------------------
 void TCliOptions::LoadFromFile (const char *szFile)
 {
@@ -139,8 +145,8 @@ void TCliOptions::LoadFromFile (const char *szFile)
 	printf ("Reading from %s\n", strFile.c_str());
 	string strJson = ReadFileAsString (strFile);
 	if (reader.parse (strJson, root)) {
-		m_paramAlpha.LoadFromJson(root["alpha"]);
-		m_paramBeta.LoadFromJson(root["beta"]);
+		m_paramAlpha.LoadFromJson(root["alpha"], "Alpha");
+		m_paramBeta.LoadFromJson(root["beta"], "Beta");
 		strFile += "";
 		SetPulseRate (root["pulse_rate"].asDouble());
 		SetBufferSize (root["buffer_size"].asInt());
@@ -148,25 +154,25 @@ void TCliOptions::LoadFromFile (const char *szFile)
 }
 
 //-----------------------------------------------------------------------------
-TSignalParams TCliOptions::GetParmasAlpha() const
+TSignalParams TCliOptions::GetParamsAlpha() const
 {
 	return (m_paramAlpha);
 }
 
 //-----------------------------------------------------------------------------
-TSignalParams TCliOptions::GetParmasbeta() const
+TSignalParams TCliOptions::GetParamsBeta() const
 {
 	return (m_paramBeta);
 }
 
 //-----------------------------------------------------------------------------
-void TCliOptions::SetParmasAlpha(const TSignalParams &paramsAlpha)
+void TCliOptions::SetParamsAlpha(const TSignalParams &paramsAlpha)
 {
 	m_paramAlpha = paramsAlpha;
 }
 
 //-----------------------------------------------------------------------------
-void TCliOptions::SetParmasBeta(const TSignalParams &paramsBeta)
+void TCliOptions::SetParamsBeta(const TSignalParams &paramsBeta)
 {
 	m_paramBeta = paramsBeta;
 }
@@ -185,11 +191,24 @@ void TCliOptions::SetSamplingRate (double d)
 //-----------------------------------------------------------------------------
 bool TCliOptions::Generate()
 {
-	bool f = false;
+	bool f;
+	TFloatVec vSignal, vBuffer;
+	TFloatVec::iterator iSignal;
+	size_t sz=0, szBuffer = GetBufferSize();
 
-	TFloatVec vSignal;
-	if (Generate(vSignal))
-		f = SaveSignal (vSignal, GetOutFileName ());
+	for (f=true ; (f == true) && (sz < szBuffer) ; ) {
+		vSignal.clear();
+		Generate(vSignal);
+		//if (Generate(vSignal)) {
+			//while (vSignal.size() * 8e-9 < GetPulseRate ())
+				//vSignal.push_back (0);
+		//}
+		for (iSignal=vSignal.begin() ; iSignal != vSignal.end() ; iSignal++)
+			vBuffer.push_back(*iSignal);
+		sz = vBuffer.size();
+	}
+	if (vBuffer.size() > 0)
+		f = SaveSignal (vBuffer, GetOutFileName ());
 	return (f);
 }
 
@@ -208,19 +227,29 @@ bool TCliOptions::SaveSignal (const TFloatVec &vSignal, const string &strFileNam
 	}
 	return (fSave);
 }
+
 //-----------------------------------------------------------------------------
 bool TCliOptions::Generate(TFloatVec &vSignal)
 {
 	bool fGen;
 
 	try {
-		TFloatVec vPulse;
+		TFloatVec vAlpha, vBeta;
 
-		if (m_paramAlpha.GetEnabled())
-			m_paramAlpha.Generate(vSignal, GetSamplingRate(), GetSignalLength());
-		if (m_paramBeta.GetEnabled())
-			m_paramAlpha.Generate(vPulse, GetSamplingRate(), GetSignalLength());
-		vSignal.insert(vSignal.begin(), vPulse.begin(), vPulse.end());
+		if (m_paramAlpha.GetEnabled()) {
+			m_paramAlpha.Generate(vAlpha, GetSamplingRate(), GetSignalLength());
+			while (vAlpha.size() * 8e-9 < GetSignalLength())
+				vSignal.push_back (0);
+		}
+		if (m_paramBeta.GetEnabled()) {
+			m_paramBeta.Generate(vBeta, GetSamplingRate(), GetSignalLength());
+			while (vBeta.size() * 8e-9 < GetSignalLength())
+				vSignal.push_back (0);
+		}
+		if (vAlpha.size() > 0)
+			vSignal.insert(vSignal.begin(), vAlpha.begin(), vAlpha.end());
+		if (vBeta.size() > 0)
+			vSignal.insert(vSignal.begin(), vBeta.begin(), vBeta.end());
 		fGen = true;
 	}
 	catch (std::exception &exp) {
@@ -229,6 +258,7 @@ bool TCliOptions::Generate(TFloatVec &vSignal)
 	}
 	return (fGen);
 }
+
 //-----------------------------------------------------------------------------
 void TCliOptions::GetSamplingRate(double dRate)
 {
