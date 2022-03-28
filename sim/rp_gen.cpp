@@ -33,6 +33,7 @@ const char *szMenuMain[] = {
 	"o - Output File",
 	"p - print",
 	"g - generate,",
+	"u - setup,",
 	"s - start/stop",
 	"======================================",
 	""};
@@ -41,7 +42,7 @@ void get_command_line_options (int argc, char *argv[], TCliOptions &options);
 void PrintHelp ();
 void print_menu (const char *szMenuMain[]);
 bool get_signal_params (TSignalParams &, const string &strSignal);
-string ReadCommand ();
+string ReadCommand (const string &strPrompt);
 bool ReadDouble (double &dValue);
 
 static const char *g_szOptions = "hi:o:rsp"; //-----------------------------------------------------------------------------
@@ -103,12 +104,14 @@ int main (int argc, char *argv[])
 			strCommand = ToLower(string(szBuf));
 			strCommand = trimString(strCommand);
 			if (strCommand == "a") {
+				params = options.GetParamsAlpha ();
 				if (get_signal_params (params, "alpha"))
-					options.SetParmasAlpha(params);
+					options.SetParamsAlpha(params);
 			}
 			else if (strCommand == "b") {
+				params = options.GetParamsBeta ();
 				if (get_signal_params (params, "beta"))
-					options.SetParmasBeta(params);
+					options.SetParamsBeta(params);
 			}
 			else if (strCommand == "q") {
 				fCont = false;
@@ -121,10 +124,14 @@ int main (int argc, char *argv[])
 						printf ("File '%s' Generated\n", options.GetOutFileName ().c_str());
 			}
 			else if (strCommand == "o") {
-				printf ("Enter output file name ");
-				string strFile = ReadCommand();
+				//printf ("Enter output file name ");
+				string strFile = ReadCommand("Enter output file name ");
 				options.SetOutFileName (strFile);
 				options.PrintParams ();
+			}
+			else if (strCommand == "u") {
+				strCommand = ReadCommand("Parameters JSON file name ");
+				options.LoadFromFile (strCommand);
 			}
 			else
 				printf ("unknown command\n");
@@ -168,14 +175,14 @@ bool get_signal_params (TSignalParams &params, const string &strSignal)
 	while (fCont) {
 		params.Print();
 		print_menu (szSignalMenu);
-		strCommand = ReadCommand ();
+		strCommand = ReadCommand ("Enter Command");
 		if (strCommand == "max") {
 			if (ReadDouble (dValue))
 				params.SetAmplitudeMax (dValue);
 		}
 		else if (strCommand == "f") {
-			printf ("Enter file name ");
-			strCommand = ReadCommand ();
+			//printf ("Enter file name ");
+			strCommand = ReadCommand ("Enter file name ");
 			params.SignalSetupFromFile (strCommand, strSignal);
 		}
 		else if (strCommand == "max") {
@@ -213,11 +220,12 @@ bool ReadDouble (double &dValue)
 }
 
 //-----------------------------------------------------------------------------
-string ReadCommand ()
+string ReadCommand (const string &strPrompt)
 {
 	char *szBuf = new char[1024];
 	string strCommand;
 	
+	printf ("%s ", strPrompt.c_str());
 	szBuf = fgets(szBuf, 1024, stdin);
 	strCommand = ToLower(string(szBuf));
 	strCommand = trimString(strCommand);
