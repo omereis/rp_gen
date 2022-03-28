@@ -140,6 +140,7 @@ bool TSignalParams::GetEnabled () const
 {
 	return (m_fEnabled);
 }
+
 //-----------------------------------------------------------------------------
 bool TSignalParams::Generate(TFloatVec &vSignal, double dt, double dSignalTime)
 {
@@ -151,12 +152,11 @@ bool TSignalParams::Generate(TFloatVec &vSignal, double dt, double dSignalTime)
 		vSignal.push_back(0);
 		double d, t, dTau = GetTauMin();
 		double dAmp, dAmpMax = GetAmplitudeMax(), dAmpMin = GetAmplitudeMin(), r = (double) rand();
-		/*dAmp = () (dAmpMax - dAmpMin) * r / RAND_MAX + dAmpMin; */
+
 		dAmp = (GetAmplitudeMax() + GetAmplitudeMin()) / 2.0;
 		for (t=dt ; t < dSignalTime ; t += dt) {
 			double dExp = t / dTau;
 			d = dAmp * exp (-dExp);
-			//d = dAmp * exp (-t / dTau);
 			vSignal.push_back (d);
 		}
 		fGen = true;
