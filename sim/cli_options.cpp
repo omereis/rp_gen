@@ -221,11 +221,11 @@ bool TCliOptions::GenerateBuffer(TFloatVec &vBuffer)
 */
 	for (f=true ; (f == true) && (sz < GetBufferSize()) ; ) {
 		vSignal.clear();
-		//Generate(vSignal);
-		if (Generate(vSignal)) {
-			while (vSignal.size() * 8e-9 < GetPulseRate ())
-				vSignal.push_back (0);
-		}
+		Generate(vSignal);
+		//if (Generate(vSignal)) {
+			//while (vSignal.size() * 8e-9 < GetPulseRate ())
+				//vSignal.push_back (0);
+		//}
 		vBuffer.insert (vBuffer.end(), vSignal.begin(), vSignal.end());
 		//for (iSignal=vSignal.begin() ; iSignal != vSignal.end() ; iSignal++)
 			//vBuffer.push_back(*iSignal);
@@ -236,21 +236,6 @@ bool TCliOptions::GenerateBuffer(TFloatVec &vBuffer)
 	return (f);
 }
 
-//-----------------------------------------------------------------------------
-bool TCliOptions::SaveSignal (const TFloatVec &vSignal, const string &strFileName)
-{
-	bool fSave = false;
-	TFloatVec::const_iterator i;
-	FILE *file = fopen (strFileName.c_str(), "w+");
-
-	if (file != NULL) {
-		for (i=vSignal.begin() ; i != vSignal.end() ; i++)
-			fprintf (file, "%g\n", *i);
-		fclose (file);
-		fSave = true;
-	}
-	return (fSave);
-}
 
 //-----------------------------------------------------------------------------
 bool TCliOptions::Generate(TFloatVec &vSignal)
@@ -281,6 +266,22 @@ bool TCliOptions::Generate(TFloatVec &vSignal)
 		fprintf (stderr, "Runtime err in 'TCliOptions::Generate':\n%s\n", exp.what());
 	}
 	return (fGen);
+}
+
+//-----------------------------------------------------------------------------
+bool TCliOptions::SaveSignal (const TFloatVec &vSignal, const string &strFileName)
+{
+	bool fSave = false;
+	TFloatVec::const_iterator i;
+	FILE *file = fopen (strFileName.c_str(), "w+");
+
+	if (file != NULL) {
+		for (i=vSignal.begin() ; i != vSignal.end() ; i++)
+			fprintf (file, "%g\n", *i);
+		fclose (file);
+		fSave = true;
+	}
+	return (fSave);
 }
 
 //-----------------------------------------------------------------------------
