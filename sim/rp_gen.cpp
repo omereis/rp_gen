@@ -11,6 +11,9 @@
 #include <getopt.h>
 #include <string.h>
 
+#ifdef	_RED_PITAYA
+#include "rp.h"
+#endif
 
 #include "bd_types.h"
 #include "rp_gen.h"
@@ -124,8 +127,10 @@ int main (int argc, char *argv[])
 					options.PrintParams ();
 			}
 			else if (strCommand == "g") {
-					if (options.Generate (vBuffer))
+					if (options.GenerateBuffer (vBuffer))
 						printf ("File '%s' Generated\n", options.GetOutFileName ().c_str());
+					else
+						printf ("\nError generating buffer and file '%s'\n", options.GetOutFileName().c_str());
 			}
 			else if (strCommand == "o") {
 				//printf ("Enter output file name ");
@@ -134,8 +139,11 @@ int main (int argc, char *argv[])
 				options.PrintParams ();
 			}
 			else if (strCommand == "u") {
-				strCommand = ReadCommand("Parameters JSON file name ");
-				options.LoadFromFile (strCommand);
+				//strCommand = ReadCommand("Parameters JSON file name ");
+				if (options.LoadFromFile (ReadCommand("Parameters JSON file name ")))
+					options.PrintParams ();
+				else
+					printf ("Error reading JSON file\n");
 			}
 			else if (strCommand == "start")
 				StartGenerator (vBuffer);
@@ -279,9 +287,64 @@ void PrintHelp ()
 }
 
 //-----------------------------------------------------------------------------
+bool CopyFPGA ()
+{
+	bool fInit;
+
+	try {
+		printf ("Copying fpga file...");
+		system ("cat /opt/redpitaya/fpga/fpga_0.94.bit > /dev/xdevcfg");
+		printf ("...Copied\n");
+		fInit = true;
+	}
+	catch (exception &e) {
+		printf ("Runtime error\n%s", e.what());
+		fInit = false;
+	}
+	return (fInit);
+}
+//-----------------------------------------------------------------------------
 void StartGenerator (const TFloatVec &vBuffer)
 {
+#ifdef	_RED_PITAYA
+	if (vBuffer.size() == 0) {
+		printf ("no buffer to generate.\nAborting\n");
+		return;
+	}
+	if (CopyFPGA ()) {
+		if(rp_Init() != RP_OK){
+			fprintf(stderr, "Rp api init failed!\n");
+		}
+		else {
+			fprintf(stderr, "RP init OK!\n");
+			float *afBuffer=NULL;
 
+			try {
+				afBuffer = new float[vBuffer.size()];
+				TFloatVec::const_iterator i;
+				int n;
+				for (i=vBuffer.begin(), n=0 ; i != vBuffer.end() ; i++, n++)
+					afBuffer[n] = *i;
+				printf("Buffer assigned %d items\n", n);
+				rp_GenArbWaveform(RP_CH_1, afBuffer, vBuffer.size());
+				rp_GenWaveform(RP_CH_1, RP_WAVEFORM_ARBITRARY);
+				if (rp_GenAmp(RP_CH_1, 1.0) != RP_OK)
+					fprintf (stderr, "Error\n");
+				if (rp_GenFreq(RP_CH_1, 100.0) != RP_OK)
+					fprintf (stderr, "Error\n");
+				if (rp_GenOutEnable(RP_CH_1) != RP_OK)
+					fprintf (stderr, "Error\n");
+				rp_Release();
+			}
+			catch (std::exception &e) {
+				fprintf (stderr, "Runtime error in StartGenerator:\n%s\n", e.what());
+			}
+			if (afBuffer != NULL)
+				delete[] afBuffer;
+
+		}
+	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
