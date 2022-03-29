@@ -95,6 +95,7 @@ void TCliOptions::PrintParams ()
 	printf ("%s\n", strBeta.c_str());
 	printf ("Output file: %s\n", m_strOutput.c_str());
 	printf ("Pulse Rate: %g miliseconds\n", m_dPulseRate * 1e3);
+	printf ("Buffer Size: %d\n", GetBufferSize());
 }
 //-----------------------------------------------------------------------------
 void TCliOptions::Print ()
@@ -127,30 +128,44 @@ string ToLower (string strSrc)
 }
 
 //-----------------------------------------------------------------------------
-void TCliOptions::LoadFromFile (const std::string &strFile)
+bool TCliOptions::LoadFromFile (const std::string &strFile)
 {
 	LoadFromFile (strFile.c_str());
 }
+
 //-----------------------------------------------------------------------------
-void TCliOptions::LoadFromFile (const char *szFile)
+bool TCliOptions::LoadFromFile (const char *szFile)
 {
 	Json::Value root, jAlpha, jBeta;
 	Json::Reader reader;
+	bool fLoad = false;
 	
 	string strTau, strFile, strExt = ExtractFileExtension (string (szFile));
 	if (strExt.length() == 0)
 		strFile = string(szFile) + string(".json");
 	else
 		strFile = string (szFile);
-	printf ("Reading from %s\n", strFile.c_str());
-	string strJson = ReadFileAsString (strFile);
-	if (reader.parse (strJson, root)) {
-		m_paramAlpha.LoadFromJson(root["alpha"], "Alpha");
-		m_paramBeta.LoadFromJson(root["beta"], "Beta");
-		strFile += "";
-		SetPulseRate (root["pulse_rate"].asDouble());
-		SetBufferSize (root["buffer_size"].asInt());
+	try {
+		if (FileExists (strFile)) {
+			printf ("Reading from %s\n", strFile.c_str());
+			string strJson = ReadFileAsString (strFile);
+			if (reader.parse (strJson, root)) {
+				m_paramAlpha.LoadFromJson(root["alpha"], "Alpha");
+				m_paramBeta.LoadFromJson(root["beta"], "Beta");
+				strFile += "";
+				SetPulseRate (root["pulse_rate"].asDouble());
+				SetBufferSize (root["buffer_size"].asInt());
+				SetOutFileName (root["out_file"].asString());
+				fLoad = true;
+			}
+		}
+		else
+			printf ("File '%s' does not exists\n", strFile.c_str());
 	}
+	catch (std::exception &e) {
+		fprintf (stderr, "%s\n", e.what());
+	}
+	return (fLoad);
 }
 
 //-----------------------------------------------------------------------------
@@ -182,6 +197,7 @@ double TCliOptions::GetSmaplingRate () const
 {
 	return (m_dSamplingRate);
 }
+
 //-----------------------------------------------------------------------------
 void TCliOptions::SetSamplingRate (double d)
 {
@@ -196,16 +212,23 @@ bool TCliOptions::GenerateBuffer(TFloatVec &vBuffer)
 	TFloatVec::iterator iSignal;
 	size_t sz=0, szBuffer = GetBufferSize();
 
+/*
 	vBuffer.clear ();
-	for (f=true ; (f == true) && (sz < szBuffer) ; ) {
+	if (Generate(vBuffer)) {
+		while (vBuffer.size() < GetBufferSize())//GetPulseRate ())
+			vBuffer.push_back (0);
+	}
+*/
+	for (f=true ; (f == true) && (sz < GetBufferSize()) ; ) {
 		vSignal.clear();
-		Generate(vSignal);
-		//if (Generate(vSignal)) {
-			//while (vSignal.size() * 8e-9 < GetPulseRate ())
-				//vSignal.push_back (0);
-		//}
-		for (iSignal=vSignal.begin() ; iSignal != vSignal.end() ; iSignal++)
-			vBuffer.push_back(*iSignal);
+		//Generate(vSignal);
+		if (Generate(vSignal)) {
+			while (vSignal.size() * 8e-9 < GetPulseRate ())
+				vSignal.push_back (0);
+		}
+		vBuffer.insert (vBuffer.end(), vSignal.begin(), vSignal.end());
+		//for (iSignal=vSignal.begin() ; iSignal != vSignal.end() ; iSignal++)
+			//vBuffer.push_back(*iSignal);
 		sz = vBuffer.size();
 	}
 	if (vBuffer.size() > 0)

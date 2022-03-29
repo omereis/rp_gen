@@ -24,8 +24,8 @@ public:
 	void SetParamsAlpha(const TSignalParams &paramsAlpha);
 	void SetParamsBeta(const TSignalParams &paramsBeta);
 
-	void LoadFromFile (const std::string &strFile);
-	void LoadFromFile (const char *szFile);
+	bool LoadFromFile (const std::string &strFile);
+	bool LoadFromFile (const char *szFile);
 	void Print ();
 	void PrintParams ();
 	bool GenerateBuffer(TFloatVec &vBuffer);
