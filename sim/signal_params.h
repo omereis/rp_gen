@@ -45,6 +45,7 @@ public:
 	void SetTauMax (double dTau);
 protected:
 	void AssignAll (const TSignalParams &other);
+	double AditiveNoise (double dValue);
 private:
 	string m_strName;
 	double m_dSignalLength;

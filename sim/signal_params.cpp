@@ -142,6 +142,25 @@ bool TSignalParams::GetEnabled () const
 }
 
 //-----------------------------------------------------------------------------
+double AddNoise (double dMax, double dMin)
+{
+	double dRand = (double) rand();
+
+	dRand = (dMax - dMin) * (dRand / (RAND_MAX)) + dMin;
+	return (dRand);
+}
+
+//-----------------------------------------------------------------------------
+double TSignalParams::AditiveNoise (double dValue)
+{
+	return (AddNoise (GetAmplitudeMax(), GetAmplitudeMin()));
+	//double dRand = (double) rand();
+
+	//dRand = (GetAmplitudeMax() - GetAmplitudeMin()) * (dRand / (RAND_MAX)) + GetAmplitudeMin();
+	//return (dRand);
+}
+
+//-----------------------------------------------------------------------------
 bool TSignalParams::Generate(TFloatVec &vSignal, double dt, double dSignalTime)
 {
 	bool fGen;
@@ -153,7 +172,9 @@ bool TSignalParams::Generate(TFloatVec &vSignal, double dt, double dSignalTime)
 		double d, t, dTau = GetTauMin();
 		double dAmp, dAmpMax = GetAmplitudeMax(), dAmpMin = GetAmplitudeMin(), r = (double) rand();
 
-		dAmp = (GetAmplitudeMax() + GetAmplitudeMin()) / 2.0;
+		//dAmp = (GetAmplitudeMax() + GetAmplitudeMin()) / 2.0;
+		dTau = AddNoise (GetTauMax(), GetTauMin());
+		dAmp = AddNoise (GetAmplitudeMax(), GetAmplitudeMin());
 		for (t=dt ; t < dSignalTime ; t += dt) {
 			double dExp = t / dTau;
 			d = dAmp * exp (-dExp);
