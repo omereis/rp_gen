@@ -168,13 +168,12 @@ bool FileExists (const std::string &strFile)
 	try {
 		file = fopen(strFile.c_str(), "r");
 		fExists = (file != NULL ? true : false);
-		fclose (file);
 	}
 	catch (std::exception &e) {
 		fExists = false;
-		if (file != NULL)
-			fclose (file);
 	}
+	if (file != NULL)
+		fclose (file);
 	return (fExists);
 }
 //---------------------------------------------------------------------------
