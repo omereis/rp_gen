@@ -350,5 +350,15 @@ void StartGenerator (const TFloatVec &vBuffer)
 //-----------------------------------------------------------------------------
 void StopGenerator ()
 {
-
+#ifdef	_RED_PITAYA
+	if(rp_Init() != RP_OK){
+		fprintf(stderr, "Rp api init failed!\n");
+	}
+	else {
+		fprintf(stderr, "RP init OK!\n");
+		if (rp_GenOutDisable(RP_CH_1) != RP_OK)
+			fprintf (stderr, "Error\n");
+		rp_Release();
+	}
+#endif
 }
