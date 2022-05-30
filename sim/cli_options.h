@@ -47,8 +47,11 @@ public:
 	void SetPulseRate (double dRate);
 	int GetBufferSize() const;
 	void SetBufferSize(int nSize);
+	void SetNoise (double dNoise);
+	double GetNoise () const;
 
 	bool SaveSignal (const TFloatVec &vSignal, const string &strFileName);
+	void AddNoise (TFloatVec &vSignal, double dNoise);
 protected:
 	void AssignAll (const TCliOptions &other);
 private:
@@ -57,6 +60,7 @@ private:
 	string m_strOutput;
 	double m_dPulseRate;
 	double m_dSignalLength;
+	double m_dNoise;
 	bool m_fShowHelp;
 	double m_dSamplingRate;
 	int m_nBufferSize;

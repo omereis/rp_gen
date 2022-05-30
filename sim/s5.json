@@ -4,7 +4,7 @@
         "AmpMin":"1.00",
         "tau_max":100e-9,
         "tau_min":100e-9,
-        "signal_length":1e-6,
+        "signal_length":500e-6,
         "enabled" : true
     },
     "beta":{
@@ -12,13 +12,12 @@
         "AmpMin":"0.80",
         "tau_max":40e-9,
         "tau_min":40e-9,
-        "signal_length":1e-6,
+        "signal_length":250e-6,
         "enabled" : true
     },
     "pulse_rate":5e-6,
     "buffer_size": 16384,
     "sample_rate":8e-9,
-	"out_file": "s.csv",
-    "noise" : 5
+	"out_file": "s.csv"
 }
 

@@ -23,4 +23,16 @@ string GetParamAsString (const string &strTitle, double dValue, const string &st
 string GetParamAsString (const string &strTitle, const string &strValue, const string &strUnits="");
 
 bool FileExists (const std::string &strFile);
+
+double VectorAverage (const TFloatVec &v);
+double VectorVariance (const TFloatVec &v);
+double VectorVariance (const TFloatVec &v, double dAverage);
+
+void PrintVector (const TFloatVec &v, const std::string &str);
+double VectorMax (const TFloatVec &v);
+double VectorMin (const TFloatVec &vec);
+void  VectorAddConst (TFloatVec &vec, double d);
+void  VectorMultiplyConst (TFloatVec &vec, double d);
+void RandomVector (TFloatVec &vNoise, size_t s);
+void NormalizeVector (TFloatVec &vec);
 #endif

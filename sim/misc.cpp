@@ -6,6 +6,8 @@
 #include "misc.h"
 #include "trim.h"
 
+#include <stdio.h>
+#include <math.h>
 using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -175,5 +177,128 @@ bool FileExists (const std::string &strFile)
 	if (file != NULL)
 		fclose (file);
 	return (fExists);
+}
+
+//-----------------------------------------------------------------------------
+double VectorAverage (const TFloatVec &v)
+{
+	TFloatVec::const_iterator i;
+	double dSum=0, dAverage=0;
+
+	if (v.size() > 0) {
+		for (i=v.begin() ; i != v.end() ; i++)
+			dSum += (double) *i;
+		dAverage = dSum / (double) v.size();
+	}
+	return (dAverage);
+}
+
+//-----------------------------------------------------------------------------
+double VectorVariance (const TFloatVec &v)
+{
+	return (VectorVariance (v, VectorAverage (v)));
+}
+
+//-----------------------------------------------------------------------------
+double VectorVariance (const TFloatVec &v, double dAverage)
+{
+	TFloatVec::const_iterator i;
+	double dVar=0, dSum=0;
+
+	if (v.size()  > 0) {
+		for (i=v.begin() ; i != v.end() ; i++) {
+			dSum += (pow(*i - dAverage, 2));
+		}
+		dVar = dSum / (double) v.size();
+	}
+	return (dVar);
+}
+
+//---------------------------------------------------------------------------
+void PrintVector (const TFloatVec &v, const std::string &str)
+{
+	FILE *file;
+	TFloatVec::const_iterator i;
+
+	try {
+		file = fopen (str.c_str(), "w+");
+		for (i=v.begin() ; i != v.end() ; i++)
+			fprintf (file, "%g\n", *i);
+		fclose (file);
+	}
+	catch (...) {
+	}
+}
+
+//-----------------------------------------------------------------------------
+double VectorMax (const TFloatVec &v)
+{
+	TFloatVec::const_iterator i;
+	double dMax;
+
+	for (i=v.begin() ; i != v.end() ; i++) {
+		if (i == v.begin())
+			dMax = *i;
+		else
+			dMax = max (dMax, (double) *i);
+	}
+	return (dMax);
+}
+
+//-----------------------------------------------------------------------------
+double VectorMin (const TFloatVec &vec)
+{
+	TFloatVec::const_iterator i;
+	double dMin;
+
+	for (i=vec.begin() ; i != vec.end() ; i++) {
+		if (i == vec.begin())
+			dMin = *i;
+		else
+			dMin = min (dMin, (double) *i);
+	}
+	return (dMin);
+}
+
+//-----------------------------------------------------------------------------
+void  VectorAddConst (TFloatVec &vec, double d)
+{
+	TFloatVec::iterator i;
+
+	for (i=vec.begin() ; i != vec.end() ; i++)
+		*i += (float) d;
+}
+
+//-----------------------------------------------------------------------------
+void  VectorMultiplyConst (TFloatVec &vec, double d)
+{
+	TFloatVec::iterator i;
+
+	for (i=vec.begin() ; i != vec.end() ; i++)
+		*i *= (float) d;
+}
+//-----------------------------------------------------------------------------
+void NormalizeVector (TFloatVec &vec)
+{
+	TFloatVec::iterator i;
+	double dAverage, dVar, dMin, dMax;
+
+	dMin = VectorMin (vec);
+	VectorAddConst (vec, -dMin);
+	dMax = VectorMax (vec);
+	VectorMultiplyConst (vec, 2.0/dMax);
+	VectorAddConst (vec, -1);
+}
+
+//-----------------------------------------------------------------------------
+void RandomVector (TFloatVec &vNoise, size_t s)
+{
+	TFloatVec::iterator i;
+
+	if (s > 0) {
+		vNoise.resize(s);
+		for (i=vNoise.begin() ; i != vNoise.end() ; i++)
+			*i = rand();
+	}
 }
 //---------------------------------------------------------------------------
