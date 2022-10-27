@@ -193,6 +193,7 @@ void TSignalParams::SetSignalLength (double dLength)
 {
 	m_dSignalLength = dLength;
 }
+
 //-----------------------------------------------------------------------------
 double TSignalParams::GetSignalLength () const
 {
@@ -200,16 +201,35 @@ double TSignalParams::GetSignalLength () const
 }
 
 //-----------------------------------------------------------------------------
+string TSignalParams::GetErrorString() const
+{
+	return (m_strErr);
+}
+
+//-----------------------------------------------------------------------------
 bool TSignalParams::SignalSetupFromFile (std::string &strFile, const string &strSignal)
 {
 	Json::Value root;
 	Json::Reader reader;
-	bool fLoad = false;
+	bool fLoad;
 
-	if (FileExists (strFile)) {
-		string strContent = ReadFileAsString (strFile);
-		if (reader.parse (strContent, root))
-			fLoad = LoadFromJson (root[strSignal], strSignal);
+	try {
+		if (strFile.find('.') == string::npos)
+			strFile += ".json";
+		if (FileExists (strFile)) {
+			string strContent = ReadFileAsString (strFile);
+			if (reader.parse (strContent, root))
+				fLoad = LoadFromJson (root[strSignal], strSignal);
+			fLoad = true;
+		}
+		else {
+			fLoad = false;
+			m_strErr = strFile + " not found";
+		}
+	}
+	catch (std::exception &exp) {
+		m_strErr = exp.what();
+		fLoad = false;
 	}
 	return (fLoad);
 }

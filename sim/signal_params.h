@@ -43,10 +43,13 @@ public:
 	double GetTauMax () const;
 	void SetTauMin (double dTau);
 	void SetTauMax (double dTau);
+
+	string GetErrorString() const;
 protected:
 	void AssignAll (const TSignalParams &other);
 	double AditiveNoise (double dValue);
 private:
+	string m_strErr;
 	string m_strName;
 	double m_dSignalLength;
 	double m_dAmpMax;
