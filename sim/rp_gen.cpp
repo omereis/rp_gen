@@ -36,6 +36,7 @@ const char *szMenuMain[] = {
 	"o - Output File",
 	"p - print",
 	"g - generate,",
+	"d - debug,",
 	"u - setup,",
 	"start - start",
 	"stop - stop",
@@ -51,7 +52,14 @@ bool ReadDouble (double &dValue);
 void StartGenerator (const TFloatVec &vBuffer);
 void StopGenerator ();
 
-static const char *g_szOptions = "hi:o:rsp"; //-----------------------------------------------------------------------------
+void generate_signal (float x[], int buff_size);
+
+static const char *g_szOptions = "hi:o:rsp";
+void generate_from_file (const char szFile[]);
+
+//-----------------------------------------------------------------------------
+void generate_from_file (char szFile[]);
+
 TRpGen::TRpGen ()
 {
 	Clear ();
@@ -89,6 +97,7 @@ void TRpGen::AssignAll (const TRpGen &other) {
     m_prmBeta = other.m_prmBeta;
 
 }
+
 //-----------------------------------------------------------------------------
 int main (int argc, char *argv[])
 {
@@ -101,6 +110,14 @@ int main (int argc, char *argv[])
 	
 	printf ("\n\nDual Pulse Simulator\n");
 	printf ("\tfor help type %s --help\n", argv[0]);
+#ifdef	_RED_PITAYA
+	if(rp_Init() != RP_OK){
+		fprintf(stderr, "Rp api init failed!\n");
+		exit (-1);
+	}
+	else
+		printf ("Red Pitaya Initialized.\n");
+#endif
 	get_command_line_options (argc, argv, options);
 	if (options.GetShowHelp())
 		PrintHelp ();
@@ -127,10 +144,16 @@ int main (int argc, char *argv[])
 					options.PrintParams ();
 			}
 			else if (strCommand == "g") {
-					if (options.GenerateBuffer (vBuffer))
-						printf ("File '%s' Generated\n", options.GetOutFileName ().c_str());
-					else
-						printf ("\nError generating buffer and file '%s'\n", options.GetOutFileName().c_str());
+/*
+				generate_from_file ("s.csv");
+*/
+				if (options.GenerateBuffer (vBuffer))
+					printf ("File '%s' Generated\n", options.GetOutFileName ().c_str());
+				else
+					printf ("\nError generating buffer and file '%s'\n", options.GetOutFileName().c_str());
+			}
+			else if (strCommand == "d") {
+				generate_from_file ("s.csv");
 			}
 			else if (strCommand == "o") {
 				//printf ("Enter output file name ");
@@ -162,6 +185,10 @@ int main (int argc, char *argv[])
 		}
 */
 	}
+
+#ifdef	_RED_PITAYA
+	rp_Release();
+#endif
 	printf ("Bye\n");
 	exit(0);
 }
@@ -199,14 +226,17 @@ bool get_signal_params (TSignalParams &params, const string &strSignal)
 		else if (strCommand == "f") {
 			//printf ("Enter file name ");
 			strCommand = ReadCommand ("Enter file name ");
-			params.SignalSetupFromFile (strCommand, strSignal);
+			if (!params.SignalSetupFromFile (strCommand, strSignal))
+				fprintf (stderr, "Error loading from file:%s", params.GetErrorString().c_str());
 		}
 		else if (strCommand == "max") {
 			if (ReadDouble (dValue))
 				params.SetAmplitudeMin (dValue);
 		}
-		else if (strCommand == "q")
+		else if (strCommand == "q") {
+			fprintf (stderr, "Quit Command\n");
 			fCont = false;
+		}
 		else if (strCommand	== "on")
 			params.SetEnabled (true);
 		else if (strCommand	== "off")
@@ -312,21 +342,27 @@ void StartGenerator (const TFloatVec &vBuffer)
 		return;
 	}
 	if (CopyFPGA ()) {
+/*
 		if(rp_Init() != RP_OK){
 			fprintf(stderr, "Rp api init failed!\n");
 		}
-		else {
-			fprintf(stderr, "RP init OK!\n");
+*/
+		if (true) {
+		//else {
+			//fprintf(stderr, "RP init OK!\n");
 			float *afBuffer=NULL;
 
 			try {
 				afBuffer = new float[vBuffer.size()];
 				TFloatVec::const_iterator i;
 				int n;
-				for (i=vBuffer.begin(), n=0 ; i != vBuffer.end() ; i++, n++)
+				for (i=vBuffer.begin(), n=0 ; (i != vBuffer.end()) && (n < 1000) ; i++, n++)
 					afBuffer[n] = *i;
+				generate_signal (afBuffer, 1000);
+				return;
 				printf("Buffer assigned %d items\n", n);
 				rp_GenArbWaveform(RP_CH_1, afBuffer, vBuffer.size());
+				printf ("rp_gen.cpp:346, rp_GenArbWaveform called\n");
 				rp_GenWaveform(RP_CH_1, RP_WAVEFORM_ARBITRARY);
 				if (rp_GenAmp(RP_CH_1, 1.0) != RP_OK)
 					fprintf (stderr, "Error\n");
@@ -334,7 +370,8 @@ void StartGenerator (const TFloatVec &vBuffer)
 					fprintf (stderr, "Error\n");
 				if (rp_GenOutEnable(RP_CH_1) != RP_OK)
 					fprintf (stderr, "Error\n");
-				rp_Release();
+				printf ("Buffer copied to generator: %d items\n", vBuffer.size());
+				//rp_Release();
 			}
 			catch (std::exception &e) {
 				fprintf (stderr, "Runtime error in StartGenerator:\n%s\n", e.what());
@@ -351,14 +388,105 @@ void StartGenerator (const TFloatVec &vBuffer)
 void StopGenerator ()
 {
 #ifdef	_RED_PITAYA
+/*
 	if(rp_Init() != RP_OK){
 		fprintf(stderr, "Rp api init failed!\n");
 	}
 	else {
+*/
 		fprintf(stderr, "RP init OK!\n");
 		if (rp_GenOutDisable(RP_CH_1) != RP_OK)
 			fprintf (stderr, "Error\n");
-		rp_Release();
-	}
+		//rp_Release();
+//}
 #endif
+}
+
+#define M_PI 3.14159265358979323846
+#include <math.h>
+
+//-----------------------------------------------------------------------------
+void generate_from_file (const char szFile[])
+{
+	TFloatVec v;
+	TFloatVec::iterator iter;
+	char *szBuf = new char[128];
+	FILE *file = fopen (szFile, "r");
+    int buff_size = 1000;
+    //int buff_size = 16384;
+	int n;
+
+	while (fgets (szBuf, 128, file) != NULL) {
+		float fVal = (float) atof(szBuf);
+		v.push_back (fVal);
+	}
+    float *t = new float[buff_size];//(float *)malloc(buff_size * sizeof(float));
+    float *x = new float[buff_size];//(float *)malloc(buff_size * sizeof(float));
+    for(n = 1; n < buff_size; n++)
+        t[n] = (2 * M_PI) / buff_size * n;
+    for (n = 0; n < buff_size; n++){
+        x[n] = sin(t[n]) + ((1.0/3.0) * sin(t[n] * 3));
+        //y[i] = (1.0/2.0) * sin(t[i]) + (1.0/4.0) * sin(t[i] * 4);
+    }
+	delete[] t;
+	delete x;
+	x = new float[v.size()];
+	//fclose (file);
+	//float *af = new float[v.size()];
+	for (n=0, iter=v.begin() ; n < v.size() ; n++, iter++)
+		x[n] = *iter;
+	FILE *fout = fopen ("s_out.csv", "w+");
+	for (iter=v.begin(), n=0 ; iter != v.end() ; iter++, n++)
+		fprintf (fout, "%g,%g\n", x[n],*iter);
+	fclose (fout);
+	int nSize = (int) v.size();
+	printf ("Generating %d items, \nbuff_size=%d\n", nSize, buff_size);
+	generate_signal (x, 10000);//nSize);
+	//generate_signal (x, (int) v.size());
+	//generate_signal (x, buff_size);
+	//generate_signal (af, (int) v.size());
+	delete szBuf;
+	delete x;
+	//delete af;
+}
+
+//-----------------------------------------------------------------------------
+void generate_signal (float x[], int buff_size)
+{
+	FILE *f = fopen("gaw.csv", "w+");
+	for (int i=0 ; i < buff_size ; i++)
+		fprintf (f, "%g\n", x[i]);
+	fclose(f);
+	int nRet;
+
+#ifdef	_RED_PITAYA
+    nRet = rp_GenSynchronise();
+	printf ("rp_GenSynchronise, nRet=%d\n", nRet);
+	//getchar();
+
+    nRet = rp_GenWaveform(RP_CH_1, RP_WAVEFORM_ARBITRARY);
+	printf ("GenWaveform, nRet=%d\n", nRet);
+	//getchar();
+
+    nRet = rp_GenArbWaveform(RP_CH_1, x, buff_size);
+	printf ("rp_GenArbWaveform, nRet=%d\n", nRet);
+	//getchar();
+
+    nRet = rp_GenAmp(RP_CH_1, 1.0);
+	printf ("rp_GenAmp, nRet=%d\n", nRet);
+	//getchar();
+
+    nRet = rp_GenFreq(RP_CH_1, 1000.0);
+	//printf ("rp_GenFreq, nRet=%d\n", nRet);
+	//getchar();
+
+    nRet = rp_GenOutEnable(RP_CH_1);
+	printf ("rp_GenOutEnable, nRet=%d\n", nRet);
+	//getchar();
+
+    nRet = rp_GenTriggerOnly(RP_CH_1);
+	printf ("rp_GenTriggerOnly, nRet=%d\n", nRet);
+	//getchar();
+#endif
+
 }
