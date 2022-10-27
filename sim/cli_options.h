@@ -37,6 +37,7 @@ public:
 	void SetSamplingRate (double d);
 	string GetOutFileName () const;
 	void SetOutFileName (const string &strFileName);
+	string SetDefaultOutputName ();
 
 	void GetSamplingRate(double dRate);
 	double GetSamplingRate();

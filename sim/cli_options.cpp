@@ -138,7 +138,7 @@ string ToLower (string strSrc)
 //-----------------------------------------------------------------------------
 bool TCliOptions::LoadFromFile (const std::string &strFile)
 {
-	LoadFromFile (strFile.c_str());
+	return (LoadFromFile (strFile.c_str()));
 }
 
 //-----------------------------------------------------------------------------
@@ -270,7 +270,10 @@ bool TCliOptions::SaveSignal (const TFloatVec &vSignal, const string &strFileNam
 {
 	bool fSave = false;
 	TFloatVec::const_iterator i;
-	FILE *file = fopen (strFileName.c_str(), "w+");
+	string strFile(strFileName);
+	if (strFile.length() == 0)
+		strFile = SetDefaultOutputName ();
+	FILE *file = fopen (strFile.c_str(), "w+");
 
 	if (file != NULL) {
 		for (i=vSignal.begin() ; i != vSignal.end() ; i++)
@@ -286,15 +289,25 @@ void TCliOptions::GetSamplingRate(double dRate)
 {
 	m_dSamplingRate = dRate;
 }
+
 //-----------------------------------------------------------------------------
 double TCliOptions::GetSamplingRate()
 {
 	return (m_dSamplingRate);
 }
+
 //-----------------------------------------------------------------------------
 string TCliOptions::GetOutFileName () const
 {
 	return (m_strOutput);
+}
+
+//-----------------------------------------------------------------------------
+string TCliOptions::SetDefaultOutputName ()
+{
+	SetOutFileName ("output.csv");
+	return (GetOutFileName ());
+
 }
 //-----------------------------------------------------------------------------
 void TCliOptions::SetOutFileName (const string &strFileName)
