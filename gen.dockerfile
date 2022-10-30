@@ -22,7 +22,7 @@ WORKDIR /home/oe/sim
 
 # COPY ./ $HOME
 COPY ./ /home/oe/
-COPY ./vimrc $HOME/.vimrc
+COPY ./vimrc.txt $HOME/.vimrc
 
 RUN python3.5 /home/oe/get-pip.py
 # RUN mv vimrc .vimrc
