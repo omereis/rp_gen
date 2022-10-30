@@ -35,4 +35,6 @@ void  VectorAddConst (TFloatVec &vec, double d);
 void  VectorMultiplyConst (TFloatVec &vec, double d);
 void RandomVector (TFloatVec &vNoise, size_t s);
 void NormalizeVector (TFloatVec &vec);
+
+bool print_vector (TFloatVec &vBuffer, const char *szFile);
 #endif

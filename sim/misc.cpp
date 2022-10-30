@@ -301,4 +301,25 @@ void RandomVector (TFloatVec &vNoise, size_t s)
 			*i = rand();
 	}
 }
+
+//-----------------------------------------------------------------------------
+bool print_vector (TFloatVec &vBuffer, const char *szFileName)
+{
+	bool fPrint = false;
+	TFloatVec::iterator i;
+
+	try {
+		FILE *file = fopen (szFileName, "w+");
+		if (file != NULL) {
+			for (i=vBuffer.begin() ; i != vBuffer.end() ; i++)
+				fprintf (file, "%g\n", *i);
+			fclose (file);
+			fPrint = true;
+		}
+	}
+	catch (std::exception &std) {
+		fprintf (stderr, "Runtime error in print_vector:\n%s\n", std.what());
+	}
+	return (fPrint);
+}
 //---------------------------------------------------------------------------
