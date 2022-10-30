@@ -34,6 +34,7 @@ const char *szMenuMain[] = {
 	"a - alpha setup",
 	"b - beta setup",
 	"o - Output File",
+	"i = input from file",
 	"p - print",
 	"g - generate,",
 	"d - debug,",
@@ -59,6 +60,7 @@ void generate_from_file (const char szFile[]);
 
 //-----------------------------------------------------------------------------
 void generate_from_file (char szFile[]);
+bool input_from_file (TFloatVec &vBuffer, string &strErr);
 
 TRpGen::TRpGen ()
 {
@@ -102,7 +104,7 @@ void TRpGen::AssignAll (const TRpGen &other) {
 int main (int argc, char *argv[])
 {
 	TCliOptions options;
-	std::string strCommand;
+	std::string strCommand, strErr;
 	TSignalParams params;
 	bool fCont=true;
 	char *szBuf = new char[1024];
@@ -167,6 +169,12 @@ int main (int argc, char *argv[])
 					options.PrintParams ();
 				else
 					printf ("Error reading JSON file\n");
+			}
+			else if (strCommand == "i") {
+				if (!input_from_file (vBuffer, strErr))
+					fprintf (stderr, "Error loading from file:\n%s\n", strErr.c_str());
+				else
+					print_vector (vBuffer, "buf.csv");	
 			}
 			else if (strCommand == "start")
 				StartGenerator (vBuffer);
@@ -489,4 +497,45 @@ void generate_signal (float x[], int buff_size)
 	//getchar();
 #endif
 
+}
+
+//-----------------------------------------------------------------------------
+bool input_from_file (TFloatVec &vBuffer, string &strErr)
+{
+	bool fInput;
+	char *szBuf = new char[1024];
+	float fValue;
+	bool fNumber;
+	FILE *file = NULL;
+
+	try {
+		vBuffer.clear();
+		printf ("\nEnter input file name...");
+		szBuf = fgets(szBuf, 1024, stdin);
+		std::string strFile = std::string (szBuf);
+		strFile = trimString (strFile);
+		fInput = true;
+		file = fopen (strFile.c_str(), "r");
+		//file = fopen (szBuf, "r");
+		if (file != NULL) {
+			while ((szBuf = fgets (szBuf, 1024, file)) != NULL) {
+				try {
+					fValue = std::atof (szBuf);
+					fNumber = true;
+				}
+				catch (...) {
+					fNumber = false;
+				}
+				if (fNumber)
+					vBuffer.push_back (fValue);
+			}
+		}
+	}
+	catch (std::exception &exp) {
+		fInput = false;
+		strErr = exp.what();
+	}
+	if (file != NULL)
+		fclose (file);
+	return (fInput);
 }
